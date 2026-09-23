@@ -51,8 +51,8 @@ function createTable(kommune) {
         dropdown.append(element);
     })
 
-
     cell.append(dropdown)
+    dropdown.value = kommune.region.kode //sætter dropdown til rigtige region for kommunen.
 
     cell = row.insertCell(cellCount++)
     const pbDelete = document.createElement("input");
