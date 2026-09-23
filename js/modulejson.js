@@ -19,8 +19,39 @@ async function restDelete(url) {
     return response;
 }
 
+async function postObjectAsJson(url, object, httpVerbum) {
+    const objectAsJsonString = JSON.stringify(object);
+    console.log(objectAsJsonString);
+    const fetchOptions = {
+        method: httpVerbum,
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: objectAsJsonString,
+    };
+    const response = await fetch(url, fetchOptions);
+    if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage);
+        //throw new Error(errorMessage);
+    }
+    const data = await response.json();
+    return data;
+}
 
 
-export {fetchAnyUrl, restDelete};
+const urlRegioner = "http://localhost:8080/api/regioner"
+
+let regionMap = new Map()
+
+async function fetchRegioner() {
+    const regioner = await fetchAnyUrl(urlRegioner)
+    regioner.forEach(region => regionMap.set(region.navn, region))
+    return regionMap
+}
+
+
+
+export {fetchAnyUrl, restDelete, fetchRegioner};
 
 

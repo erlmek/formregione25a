@@ -1,4 +1,4 @@
-import { fetchAnyUrl, restDelete } from "./modulejson.js"
+import { fetchAnyUrl, restDelete, fetchRegioner } from "./modulejson.js"
 console.log("er i kommunetable")
 
 const urlKommune = "http://localhost:8080/api/kommuner"
@@ -24,6 +24,14 @@ function createTable(kommune) {
     cell.style.width = "20%"
 
     cell = row.insertCell(cellCount++)
+    let img = document.createElement("img")
+    img.setAttribute("src", kommune.hrefPhoto)
+    img.setAttribute("alt", "hej")
+    img.setAttribute("width", 150)
+    img.setAttribute("height", 150)
+    cell.appendChild(img)
+
+    cell = row.insertCell(cellCount++)
     cell.innerHTML = kommune.region.kode
     cell.style.width = "5%"
 
@@ -31,14 +39,29 @@ function createTable(kommune) {
     cell.innerHTML = kommune.region.navn
     cell.style.width = "15%"
 
+    //Add region dropdown
+    cell = row.insertCell(cellCount++)
+    const dropdown = document.createElement('select');
+
+    regmap.forEach(reg => {
+        const element = document.createElement('option');
+        element.textContent = reg.navn
+        element.value = reg.kode
+        element.region = reg
+        dropdown.append(element);
+    })
+
+
+    cell.append(dropdown)
+
     cell = row.insertCell(cellCount++)
     const pbDelete = document.createElement("input");
     pbDelete.type = "button";
     pbDelete.setAttribute("value", "Slet kommune");
     pbDelete.className = "btn1"
     cell.appendChild(pbDelete);
-    pbDelete.onclick = function() {
-        if (deleteKommune(kommune)) {
+    pbDelete.onclick = async function() {
+        if (await deleteKommune(kommune)) {
             document.getElementById(kommune.navn).remove();
         }
     }
@@ -47,7 +70,6 @@ function createTable(kommune) {
 async function deleteKommune(kommune) {
     try {
         const url = urlKommune + "/" + kommune.kode;
-        debugger;
         const response = await restDelete(url);
         if (response.ok) {
             console.log("Kommune slettet:" + kommune.navn);
@@ -65,11 +87,22 @@ async function deleteKommune(kommune) {
     return true;
 }
 
+function mysort(kommuner) {
+    return kommuner.sort((kom1,kom2) => {
+        if (kom1.region.kode>kom2.region.kode) {return -1}
+        else if (kom2.region.kode > kom1.region.kode) {return 1}
+        else {return (kom1.navn > kom2.navn) ? 1 : -1}
+    })
+}
+
 
 let kommuner = [];
+let regmap = new Map();
 async function fetchKommuner() {
+    regmap = await fetchRegioner()
     kommuner = await fetchAnyUrl(urlKommune);
     if (kommuner) {
+        mysort(kommuner);
         kommuner.forEach(createTable)
     }
     console.log(kommuner);
