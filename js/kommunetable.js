@@ -46,7 +46,7 @@ function createTable(kommune) {
 
 async function deleteKommune(kommune) {
     try {
-        const url = urlKommune + "/x" + kommune.kode;
+        const url = urlKommune + "/" + kommune.kode;
         debugger;
         const response = await restDelete(url);
         if (response.ok) {
